@@ -33,7 +33,7 @@ install_dependencies() {
 
 # Create the MOTD script
 create_motd_script() {
-    cat << 'EOF' > /etc/update-motd.d/99-custom
+    cat << 'EOF' > /etc/motd.d/99-custom
 #!/bin/sh
 if [[ $- == *i* ]]; then
     #
