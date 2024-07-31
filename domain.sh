@@ -33,7 +33,7 @@ sudo bash -c 'echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0077
 
 # Allow SG-linux_admins group to login
 echo "Allowing SG-linux_admins group to login..."
-sudo realm permit -g SG-linux_admins
+sudo realm permit -g sg-linux_admins
 
 # Configure sudoers to allow SG-linux_admins to use sudo without a password
 echo "Configuring sudoers..."
