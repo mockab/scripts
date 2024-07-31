@@ -112,7 +112,7 @@ if [[ $- == *i* ]]; then
     echo
 fi
 EOF
-    chmod +x /etc/update-motd.d/99-custom || error_exit "Failed to make the MOTD script executable." 8
+    chmod +x /etc/motd.d/99-custom || error_exit "Failed to make the MOTD script executable." 8
 }
 
 # Main function
