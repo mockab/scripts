@@ -33,7 +33,7 @@ install_dependencies() {
 
 # Create the MOTD script
 create_motd_script() {
-    cat << 'EOF' > /etc/motd.d/99-custom
+    cat << 'EOF' > /etc/motd.d/99-custom.sh
 #!/bin/sh
 if [[ $- == *i* ]]; then
     #
@@ -112,7 +112,7 @@ if [[ $- == *i* ]]; then
     echo
 fi
 EOF
-    chmod +x /etc/motd.d/99-custom || error_exit "Failed to make the MOTD script executable." 8
+    chmod +x /etc/motd.d/99-custom.sh || error_exit "Failed to make the MOTD script executable." 8
 }
 
 # Main function
