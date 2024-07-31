@@ -15,18 +15,19 @@ fi
 install_dependencies() {
     if [ -f /etc/redhat-release ]; then
         echo "Detected Red Hat-based system. Installing dependencies..."
-        yum install -y figlet || error_exit "Failed to install figlet." 2
+        yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm || error_exit "Failed to install EPEL repository." 2
+        yum install -y figlet || error_exit "Failed to install figlet." 3
     elif [ -f /etc/lsb-release ] || [ -f /etc/os-release ]; then
         . /etc/os-release
         if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
             echo "Detected Ubuntu-based system. Installing dependencies..."
-            apt-get update || error_exit "Failed to update package list." 3
-            apt-get install -y figlet || error_exit "Failed to install figlet." 4
+            apt-get update || error_exit "Failed to update package list." 4
+            apt-get install -y figlet || error_exit "Failed to install figlet." 5
         else
-            error_exit "Unsupported Debian-based system." 5
+            error_exit "Unsupported Debian-based system." 6
         fi
     else
-        error_exit "Unsupported operating system." 6
+        error_exit "Unsupported operating system." 7
     fi
 }
 
@@ -111,7 +112,7 @@ if [[ $- == *i* ]]; then
     echo
 fi
 EOF
-    chmod +x /etc/update-motd.d/99-custom || error_exit "Failed to make the MOTD script executable." 7
+    chmod +x /etc/update-motd.d/99-custom || error_exit "Failed to make the MOTD script executable." 8
 }
 
 # Main function
