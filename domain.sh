@@ -39,6 +39,13 @@ sudo realm permit -g SG-linux_admins
 echo "Configuring sudoers..."
 sudo bash -c 'echo "%SG-linux_admins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/SG-linux_admins'
 
+ # Set use_fully_qualified_names to false
+echo "Seting FQDN to false"
+sed -i 's/use_fully_qualified_names = .*/use_fully_qualified_names = false/' /etc/sssd/sssd.conf
+# Change fallback_homedir
+echo "setting fallback dir"
+sed -i 's/fallback_homedir = .*/fallback_homedir = \/home\/%u/' /etc/sssd/sssd.conf
+
 # Restart SSSD service
 echo "Restarting SSSD service..."
 sudo systemctl restart sssd
