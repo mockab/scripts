@@ -9,6 +9,19 @@ prompt() {
     eval $varname="'$value'"
 }
 
+# Function to install packages based on the OS
+install_packages() {
+    if [ -f /etc/redhat-release ]; then
+        sudo yum install -y realmd sssd oddjob oddjob-mkhomedir adcli samba-common samba-common-tools
+    elif [ -f /etc/lsb-release ]; then
+        sudo apt-get update
+        sudo apt-get install -y realmd sssd sssd-tools libnss-sss libpam-sss adcli samba-common-bin oddjob oddjob-mkhomedir packagekit
+    else
+        echo "Unsupported OS"
+        exit 1
+    fi
+}
+
 # Prompt for credentials
 prompt DOMAIN "Enter the domain (e.g., moskal.org)"
 prompt USERNAME "Enter your domain username"
@@ -17,7 +30,7 @@ echo
 
 # Install necessary packages
 echo "Installing necessary packages..."
-sudo yum install -y realmd sssd oddjob oddjob-mkhomedir adcli samba-common samba-common-tools
+install_packages
 
 # Discover the domain
 echo "Discovering the domain..."
@@ -39,12 +52,13 @@ sudo realm permit -g sg-linux_admins
 echo "Configuring sudoers..."
 sudo bash -c 'echo "%SG-linux_admins ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/SG-linux_admins'
 
- # Set use_fully_qualified_names to false
-echo "Seting FQDN to false"
-sed -i 's/use_fully_qualified_names = .*/use_fully_qualified_names = false/' /etc/sssd/sssd.conf
+# Set use_fully_qualified_names to false
+echo "Setting FQDN to false"
+sudo sed -i 's/use_fully_qualified_names = .*/use_fully_qualified_names = false/' /etc/sssd/sssd.conf
+
 # Change fallback_homedir
-echo "setting fallback dir"
-sed -i 's/fallback_homedir = .*/fallback_homedir = \/home\/%u/' /etc/sssd/sssd.conf
+echo "Setting fallback dir"
+sudo sed -i 's/fallback_homedir = .*/fallback_homedir = \/home\/%u/' /etc/sssd/sssd.conf
 
 # Restart SSSD service
 echo "Restarting SSSD service..."
