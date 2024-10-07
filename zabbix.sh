@@ -38,9 +38,9 @@ systemctl enable zabbix-agent2
 
 # Update the Zabbix Agent 2 configuration
 echo "Updating Zabbix Agent 2 configuration..."
-sed -i "s/Server=127.0.0.1/Server=${zabbix_ip}/" /etc/zabbix/zabbix_agent2
-sed -i "s/ServerActive=127.0.0.1/ServerActive=${zabbix_ip}/" /etc/zabbix/zabbix_agent2
-sed -i "s/Hostname=Zabbix server/Hostname=$(hostname)/" /etc/zabbix/zabbix_agent2
+sed -i "s/Server=127.0.0.1/Server=${zabbix_ip}/" /etc/zabbix/zabbix_agent2.conf
+sed -i "s/ServerActive=127.0.0.1/ServerActive=${zabbix_ip}/" /etc/zabbix/zabbix_agent2.conf
+sed -i "s/Hostname=Zabbix server/Hostname=$(hostname)/" /etc/zabbix/zabbix_agent2.conf
 
 # Get the hostname of the server
 current_hostname=$(hostname)
