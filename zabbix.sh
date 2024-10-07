@@ -6,16 +6,19 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Prompt the user for the second octet of the IP address
-read -p "Please enter the second octet for the Zabbix server IP (e.g., if the IP is 10.X.30.1): " second_octet
+# Get the system's own IP address (assuming it's on eth0 or a similar interface)
+system_ip=$(hostname -I | awk '{print $1}')
 
-# Validate the input (must be a number between 0 and 255)
+# Extract the second octet from the system's IP address
+second_octet=$(echo "$system_ip" | cut -d '.' -f 2)
+
+# Validate the second octet
 if ! [[ "$second_octet" =~ ^[0-9]+$ ]] || [ "$second_octet" -lt 0 ] || [ "$second_octet" -gt 255 ]; then
-    echo "Invalid input. Please enter a number between 0 and 255."
+    echo "Failed to extract a valid second octet from the IP address."
     exit 1
 fi
 
-# Construct the full IP address (assuming a 10.X.30.1 format)
+# Construct the full Zabbix server IP address (assuming a 10.X.30.1 format)
 server_ip="10.${second_octet}.30.1"
 
 # Run the commands
@@ -28,6 +31,12 @@ dnf clean all
 echo "Installing Zabbix Agent 2 and plugins..."
 dnf install -y zabbix-agent2 zabbix-agent2-plugin-*
 
+# Start and enable Zabbix Agent 2 before updating the config
+echo "Restarting and enabling Zabbix Agent 2..."
+systemctl restart zabbix-agent2
+systemctl enable zabbix-agent2
+
+# Update the Zabbix Agent 2 configuration
 echo "Updating Zabbix Agent 2 configuration..."
 sed -i "s/Server=127.0.0.1/Server=${server_ip}/" /etc/zabbix/zabbix_agent2
 sed -i "s/ServerActive=127.0.0.1/ServerActive=${server_ip}/" /etc/zabbix/zabbix_agent2
@@ -50,8 +59,8 @@ fi
 # Reload the firewall to apply changes
 firewall-cmd --reload
 
-echo "Restarting and enabling Zabbix Agent 2..."
+# Restart Zabbix Agent 2 to apply the new configuration
+echo "Restarting Zabbix Agent 2..."
 systemctl restart zabbix-agent2
-systemctl enable zabbix-agent2
 
 echo "Zabbix Agent 2 installation and configuration complete."
