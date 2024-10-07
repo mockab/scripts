@@ -19,7 +19,7 @@ if ! [[ "$second_octet" =~ ^[0-9]+$ ]] || [ "$second_octet" -lt 0 ] || [ "$secon
 fi
 
 # Construct the full Zabbix server IP address (assuming a 10.X.30.1 format)
-server_ip="10.${second_octet}.30.1"
+zabbix_ip="10.${second_octet}.30.1"
 
 # Run the commands
 echo "Installing Zabbix repository..."
@@ -38,8 +38,8 @@ systemctl enable zabbix-agent2
 
 # Update the Zabbix Agent 2 configuration
 echo "Updating Zabbix Agent 2 configuration..."
-sed -i "s/Server=127.0.0.1/Server=${server_ip}/" /etc/zabbix/zabbix_agent2
-sed -i "s/ServerActive=127.0.0.1/ServerActive=${server_ip}/" /etc/zabbix/zabbix_agent2
+sed -i "s/Server=127.0.0.1/Server=${zabbix_ip}/" /etc/zabbix/zabbix_agent2
+sed -i "s/ServerActive=127.0.0.1/ServerActive=${zabbix_ip}/" /etc/zabbix/zabbix_agent2
 sed -i "s/Hostname=Zabbix server/Hostname=$(hostname)/" /etc/zabbix/zabbix_agent2
 
 # Get the hostname of the server
@@ -52,7 +52,7 @@ if [[ "$current_hostname" == *"splk"* ]]; then
 else
     echo "Hostname does not contain 'splk', using Zabbix-specific firewall zone configuration..."
     firewall-cmd --new-zone=zabbix --permanent
-    firewall-cmd --permanent --zone=zabbix --add-source=${server_ip}/32
+    firewall-cmd --permanent --zone=zabbix --add-source=${zabbix_ip}/32
     firewall-cmd --permanent --zone=zabbix --add-port=10050/tcp
 fi
 
