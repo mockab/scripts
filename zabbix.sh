@@ -6,20 +6,29 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Get the system's own IP address (assuming it's on eth0 or a similar interface)
-system_ip=$(hostname -I | awk '{print $1}')
+# Check if a Zabbix endpoint is provided as an argument
+if [ -z "$1" ]; then
+    echo "No Zabbix endpoint provided, deriving IP based on system's network configuration..."
 
-# Extract the second octet from the system's IP address
-second_octet=$(echo "$system_ip" | cut -d '.' -f 2)
+    # Get the system's own IP address (assuming it's on eth0 or a similar interface)
+    system_ip=$(hostname -I | awk '{print $1}')
 
-# Validate the second octet
-if ! [[ "$second_octet" =~ ^[0-9]+$ ]] || [ "$second_octet" -lt 0 ] || [ "$second_octet" -gt 255 ]; then
-    echo "Failed to extract a valid second octet from the IP address."
-    exit 1
+    # Extract the second octet from the system's IP address
+    second_octet=$(echo "$system_ip" | cut -d '.' -f 2)
+
+    # Validate the second octet
+    if ! [[ "$second_octet" =~ ^[0-9]+$ ]] || [ "$second_octet" -lt 0 ] || [ "$second_octet" -gt 255 ]; then
+        echo "Failed to extract a valid second octet from the IP address."
+        exit 1
+    fi
+
+    # Construct the full Zabbix server IP address (assuming a 10.X.30.1 format)
+    zabbix_ip="10.${second_octet}.30.1"
+else
+    # Use the provided argument as the Zabbix endpoint (IP or hostname)
+    zabbix_ip="$1"
+    echo "Using provided Zabbix endpoint: ${zabbix_ip}"
 fi
-
-# Construct the full Zabbix server IP address (assuming a 10.X.30.1 format)
-zabbix_ip="10.${second_octet}.30.1"
 
 # Run the commands
 echo "Installing Zabbix repository..."
