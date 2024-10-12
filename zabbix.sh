@@ -2,7 +2,7 @@
 
 # Ensure the script is run as root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root or with sudo privileges" 
+   echo "This script must be run as root or with sudo privileges"
    exit 1
 fi
 
@@ -10,7 +10,7 @@ fi
 if [ -z "$1" ]; then
     echo "No Zabbix endpoint provided, deriving IP based on system's network configuration..."
 
-    # Get the system's own IP address (assuming it's on eth0 or a similar interface)
+    # Get the system's own IP address
     system_ip=$(hostname -I | awk '{print $1}')
 
     # Extract the second octet from the system's IP address
@@ -30,15 +30,48 @@ else
     echo "Using provided Zabbix endpoint: ${zabbix_ip}"
 fi
 
-# Run the commands
-echo "Installing Zabbix repository..."
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-5.el8.noarch.rpm
+# Detect OS and install Zabbix Agent accordingly
+if [ -f /etc/redhat-release ]; then
+    echo "Detected RHEL-based system."
+    echo "Installing Zabbix repository..."
+    rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-5.el8.noarch.rpm
 
-echo "Cleaning DNF cache..."
-dnf clean all
+    echo "Cleaning DNF cache..."
+    dnf clean all
 
-echo "Installing Zabbix Agent 2 and plugins..."
-dnf install -y zabbix-agent2 zabbix-agent2-plugin-*
+    echo "Installing Zabbix Agent 2 and plugins..."
+    dnf install -y zabbix-agent2 zabbix-agent2-plugin-*
+
+elif [ -f /etc/lsb-release ]; then
+    echo "Detected Ubuntu-based system."
+
+    # Detect architecture
+    ARCH=$(dpkg --print-architecture)
+    if [ "$ARCH" == "amd64" ]; then
+        echo "Detected x86_64 architecture."
+        echo "Installing Zabbix repository for x86_64..."
+        wget https://repo.zabbix.com/zabbix/6.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.0-6+ubuntu24.04_all.deb
+	dpkg -i zabbix-release_6.0-6+ubuntu24.04_all.deb
+    elif [ "$ARCH" == "arm64" ]; then
+        echo "Detected arm64 architecture."
+        echo "Installing Zabbix repository for arm64..."
+        wget https://repo.zabbix.com/zabbix/6.0/ubuntu-arm64/pool/main/z/zabbix-release/zabbix-release_6.0-6+ubuntu24.04_all.deb
+	dpkg -i zabbix-release_6.0-6+ubuntu24.04_all.deb
+    else
+        echo "Unsupported architecture for Ubuntu."
+        exit 1
+    fi
+
+    echo "Updating package list..."
+    apt update
+
+    echo "Installing Zabbix Agent 2..."
+    apt install -y zabbix-agent2
+
+else
+    echo "Unsupported OS. This script only supports RHEL-based and Ubuntu-based systems."
+    exit 1
+fi
 
 # Start and enable Zabbix Agent 2 before updating the config
 echo "Restarting and enabling Zabbix Agent 2..."
@@ -54,19 +87,31 @@ sed -i "s/Hostname=Zabbix server/Hostname=$(hostname)/" /etc/zabbix/zabbix_agent
 # Get the hostname of the server
 current_hostname=$(hostname)
 
-# Check if the hostname contains "splk"
+# Configure the firewall based on hostname
 if [[ "$current_hostname" == *"splk"* ]]; then
     echo "Hostname contains 'splk', using Splunk firewall zone configuration..."
-    firewall-cmd --permanent --zone=splunk --add-port=10050/tcp
+    if command -v firewall-cmd &> /dev/null; then
+        firewall-cmd --permanent --zone=splunk --add-port=10050/tcp
+    elif command -v ufw &> /dev/null; then
+        ufw allow 10050/tcp
+    fi
 else
-    echo "Hostname does not contain 'splk', using Zabbix-specific firewall zone configuration..."
-    firewall-cmd --new-zone=zabbix --permanent
-    firewall-cmd --permanent --zone=zabbix --add-source=${zabbix_ip}/32
-    firewall-cmd --permanent --zone=zabbix --add-port=10050/tcp
+    echo "Hostname does not contain 'splk', configuring Zabbix-specific firewall rules..."
+    if command -v firewall-cmd &> /dev/null; then
+        firewall-cmd --new-zone=zabbix --permanent
+        firewall-cmd --permanent --zone=zabbix --add-source=${zabbix_ip}/32
+        firewall-cmd --permanent --zone=zabbix --add-port=10050/tcp
+    elif command -v ufw &> /dev/null; then
+        ufw allow from ${zabbix_ip}/32 to any port 10050/tcp
+    fi
 fi
 
-# Reload the firewall to apply changes
-firewall-cmd --reload
+# Reload the firewall to apply changes if applicable
+if command -v firewall-cmd &> /dev/null; then
+    firewall-cmd --reload
+elif command -v ufw &> /dev/null; then
+    ufw reload
+fi
 
 # Restart Zabbix Agent 2 to apply the new configuration
 echo "Restarting Zabbix Agent 2..."
