@@ -51,12 +51,12 @@ elif [ -f /etc/lsb-release ]; then
         echo "Detected x86_64 architecture."
         echo "Installing Zabbix repository for x86_64..."
         wget https://repo.zabbix.com/zabbix/6.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.0-4+ubuntu22.04_all.deb
-	dpkg -i zabbix-release_6.0-6+ubuntu22.04_all.deb
+	dpkg -i zabbix-release_6.0-4+ubuntu22.04_all.deb
     elif [ "$ARCH" == "arm64" ]; then
         echo "Detected arm64 architecture."
         echo "Installing Zabbix repository for arm64..."
         wget https://repo.zabbix.com/zabbix/6.0/ubuntu-arm64/pool/main/z/zabbix-release/zabbix-release_6.0-5+ubuntu22.04_all.deb
-	dpkg -i zabbix-release_6.0-6+ubuntu22.04_all.deb
+	dpkg -i zabbix-release_6.0-5+ubuntu22.04_all.deb
     else
         echo "Unsupported architecture for Ubuntu."
         exit 1
