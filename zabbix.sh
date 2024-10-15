@@ -102,7 +102,7 @@ else
         firewall-cmd --permanent --zone=zabbix --add-source=${zabbix_ip}/32
         firewall-cmd --permanent --zone=zabbix --add-port=10050/tcp
     elif command -v ufw &> /dev/null; then
-        ufw allow from ${zabbix_ip}/32 to any port 10050/tcp
+	ufw allow from ${zabbix_ip} to any port 10050 proto tcp
     fi
 fi
 
