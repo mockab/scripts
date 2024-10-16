@@ -66,7 +66,7 @@ elif [ -f /etc/lsb-release ]; then
     apt update
 
     echo "Installing Zabbix Agent 2..."
-    apt install -y zabbix-agent2
+    apt install -y zabbix-agent2 zabbix-agent2-plugin-*
 
 elif [ -f /etc/debian_version ]; then
     echo "Detected Debian-based system."
@@ -92,7 +92,7 @@ elif [ -f /etc/debian_version ]; then
     apt update
 
     echo "Installing Zabbix Agent 2..."
-    apt install -y zabbix-agent2
+    apt install -y zabbix-agent2 zabbix-agent2-plugin-*
     
 else
     echo "Unsupported OS. This script only supports RHEL-based and Ubuntu-based systems."
