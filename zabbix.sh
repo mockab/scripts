@@ -68,6 +68,26 @@ elif [ -f /etc/lsb-release ]; then
     echo "Installing Zabbix Agent 2..."
     apt install -y zabbix-agent2
 
+elif [ -f /etc/debian_version ]; then
+    echo "Detected Debian-based system."
+
+    # Detect architecture
+    ARCH=$(dpkg --print-architecture)
+    if [ "$ARCH" == "amd64" ]; then
+        echo "Detected x86_64 architecture."
+        echo "Installing Zabbix repository for x86_64..."
+        wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest+debian12_all.deb
+	dpkg -i zabbix-release_latest+debian12_all.deb
+    elif [ "$ARCH" == "arm64" ]; then
+        echo "Detected arm64 architecture."
+        echo "Installing Zabbix repository for arm64..."
+        wget https://repo.zabbix.com/zabbix/7.0/debian-arm64/pool/main/z/zabbix-release/zabbix-release_latest+debian12_all.deb
+	dpkg -i zabbix-release_latest+debian12_all.deb
+    else
+        echo "Unsupported architecture for Ubuntu."
+        exit 1
+    fi
+    
 else
     echo "Unsupported OS. This script only supports RHEL-based and Ubuntu-based systems."
     exit 1
