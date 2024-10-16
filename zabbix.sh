@@ -84,7 +84,7 @@ elif [ -f /etc/debian_version ]; then
         wget https://repo.zabbix.com/zabbix/7.0/debian-arm64/pool/main/z/zabbix-release/zabbix-release_latest+debian12_all.deb
 	dpkg -i zabbix-release_latest+debian12_all.deb
     else
-        echo "Unsupported architecture for Ubuntu."
+        echo "Unsupported architecture for Debian."
         exit 1
     fi
 
