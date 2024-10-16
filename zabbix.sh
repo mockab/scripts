@@ -87,6 +87,12 @@ elif [ -f /etc/debian_version ]; then
         echo "Unsupported architecture for Ubuntu."
         exit 1
     fi
+
+    echo "Updating package list..."
+    apt update
+
+    echo "Installing Zabbix Agent 2..."
+    apt install -y zabbix-agent2
     
 else
     echo "Unsupported OS. This script only supports RHEL-based and Ubuntu-based systems."
